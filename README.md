@@ -42,7 +42,7 @@ In Playnite, install both:
 
 
 ### 4. Install the modified TrailerLovers theme
-Download the modified theme from this repository and place it in your Playnite themes folder:
+Download the modified theme from this repository, unzip it and place it in your Playnite themes folder:
 
 ```
 C:\Users\[yourusername]\AppData\Local\Playnite\Themes\Fullscreen
