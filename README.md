@@ -8,7 +8,7 @@ Get animated game covers in Playnite's fullscreen mode — plays on focus, retur
 
 ## How it works
 
-Playnite's Extra Metadata Loader addon supports a file called `VideoMicrotrailer.mp4` per game. This project patches your chosen fullscreen theme's XAML to hook into that file and display it as an animated cover in the game carousel — looping while the game is focused, hidden when it isn't.
+Playnite's Extra Metadata Loader addon supports a file called `VideoMicrotrailer.mp4` per game. This project patches your chosen fullscreen theme's XAML to hook into that file and display it as an animated cover in the game carousel, looping while the game is focused, hidden when it isn't.
 
 The patch is applied via a GitHub Copilot prompt (using Claude Haiku 4.5) that reads your theme and makes the necessary XAML/WPF changes automatically.
 
@@ -36,17 +36,19 @@ Before making any changes, back up your Playnite library and themes folder.
 In Playnite, install both:
 - **Extra Metadata Loader**
 - **Extra Metadata Fullscreen Mode Helper**
+- **TrailerLovers Fullscreen theme**
 
-### 3. Install the modified TrailerLovers theme
-Download the theme from this repository and place it in your Playnite themes folder:
+### 3. Close Playnite fully
+
+
+### 4. Install the modified TrailerLovers theme
+Download the modified theme from this repository and place it in your Playnite themes folder:
 
 ```
 C:\Users\[yourusername]\AppData\Local\Playnite\Themes\Fullscreen
 ```
-
 Replace the existing TrailerLovers folder with the one from this repo.
 
-### 4. Close Playnite fully
 
 ### 5. Apply the XAML patch to your theme
 
@@ -57,6 +59,7 @@ C:\Users\[yourusername]\AppData\Local\Playnite
 ```
 
 Open the **GitHub Copilot** chat panel and select **Claude Haiku 4.5** as the model.
+
 
 Copy the prompt from [`patch-prompt.txt`](./patch-prompt.txt) in this repo. Replace the `[theme]` placeholder with the name of your chosen fullscreen theme, then paste the prompt into the Copilot chat and run it.
 
@@ -75,7 +78,7 @@ VideoMicrotrailer.mp4
 
 ### 7. Test it
 
-Launch Playnite in fullscreen mode. Focus the game in the carousel — the animated cover should play on loop. Move to another game and it returns to the static cover.
+Launch Playnite in fullscreen mode. Focus the game in the carousel, the animated cover should play on loop. Move to another game and it returns to the static cover.
 
 ---
 
@@ -95,15 +98,6 @@ If a game doesn't have an animated cover on SteamGridDB, you can create one:
 | TrailerLovers | ✅ Confirmed working |
 | Ubiquity | ✅ Confirmed working |
 | Other themes with Extra Metadata support | Likely compatible via the Copilot patch |
-
----
-
-## File reference
-
-```
-VideoMicrotrailer.mp4    → animated cover file, placed in the game's Extra Metadata directory
-patch-prompt.txt         → Copilot prompt used to patch your theme's XAML
-```
 
 ---
 
