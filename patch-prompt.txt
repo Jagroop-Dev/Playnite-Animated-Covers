@@ -1,0 +1,75 @@
+I have a Playnite fullscreen theme called [THEME]. I want to add the same "animated cover on focus" feature that I implemented in my TrailerLovers theme: when a game tile in the carousel is focused/selected, it shows a looping silent micro-trailer video instead of the static cover; when unfocused, it reverts to the static cover image.
+Step 1 — Locate the carousel item template
+
+Find the file that defines the carousel/grid item ControlTemplate for GameListItem (likely something like ListGameItemTemplate.xaml or similar inside a DerivedStyles or CustomControls folder). Identify the Image element that displays the cover (its x:Name, likely PART_ImageCover), and confirm there's a Grid as the root of the ControlTemplate.
+Step 2 — Make a backup
+
+Copy the current template file to <filename>.xaml.backup before making changes.
+Step 3 — Add a hidden TextBlock that computes the video path
+
+Inside the root Grid, as the first child element (before PART_ImageCover), add this TextBlock. It must be a real visual element in the tree (not a resource), so ElementName bindings can find it:
+xml<TextBlock Name="VideoPath" Tag="{DynamicResource ExtraMetadataPath}" Visibility="Collapsed">
+    <TextBlock.Style>
+        <Style TargetType="TextBlock">
+            <Setter Property="Text">
+                <Setter.Value>
+                    <MultiBinding StringFormat="{}{0}\ExtraMetadata\games\{1}\VideoMicrotrailer.mp4">
+                        <Binding RelativeSource="{RelativeSource Self}" Path="Tag" />
+                        <Binding Path="DataContext.Id" RelativeSource="{RelativeSource FindAncestor, AncestorType={x:Type GameListItem}}" />
+                    </MultiBinding>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </TextBlock.Style>
+</TextBlock>
+Step 4 — Add the VideoContainer with MediaElement
+
+After the TextBlock but before (or after — visually on top of) PART_ImageCover, add:
+xml<Grid x:Name="VideoContainer" Visibility="Collapsed" Opacity="1">
+    <MediaElement x:Name="VideoSource"
+                  Stretch="Uniform"
+                  RenderOptions.BitmapScalingMode="HighQuality"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  LoadedBehavior="Play"
+                  UnloadedBehavior="Stop"
+                  IsMuted="True"
+                  MediaElementBehaviors.Repeat="True" />
+</Grid>
+Do not bind Source directly on the MediaElement declaration — leave it unset. Source will only be set via triggers (Step 5). Do not use any Storyboard, DoubleAnimation, or Opacity fades — visibility toggling only, this avoids WPF state-conflict bugs.
+Step 5 — Add focus/unfocus DataTriggers
+
+Inside ControlTemplate.Triggers, add these two triggers (alongside any existing ones — don't remove existing triggers like the uninstalled-game darken border):
+xml<DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=ListBoxItem}, Path=IsSelected}" Value="True">
+    <Setter Property="Visibility" Value="Visible" TargetName="VideoContainer" />
+    <Setter Property="Visibility" Value="Collapsed" TargetName="PART_ImageCover" />
+    <Setter Property="MediaElement.Source" TargetName="VideoSource" Value="{Binding ElementName=VideoPath, Path=Text}" />
+</DataTrigger>
+
+<DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=ListBoxItem}, Path=IsSelected}" Value="False">
+    <Setter Property="Visibility" Value="Visible" TargetName="PART_ImageCover" />
+    <Setter Property="Visibility" Value="Collapsed" TargetName="VideoContainer" />
+    <Setter Property="MediaElement.Source" TargetName="VideoSource" Value="{x:Null}" />
+</DataTrigger>
+Step 6 — Add a looping mechanism via EventTrigger
+
+Also inside ControlTemplate.Triggers, add an EventTrigger that listens for MediaElement.MediaEnded on VideoSource and forces a reload (null → rebind) to restart playback from the beginning:
+xml<EventTrigger RoutedEvent="MediaElement.MediaEnded" SourceName="VideoSource">
+    <BeginStoryboard>
+        <Storyboard>
+            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VideoSource" Storyboard.TargetProperty="Source">
+                <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{x:Null}" />
+                <DiscreteObjectKeyFrame KeyTime="0:0:0.01" Value="{Binding ElementName=VideoPath, Path=Text}" />
+            </ObjectAnimationUsingKeyFrames>
+        </Storyboard>
+    </BeginStoryboard>
+</EventTrigger>
+Step 7 — Verify resource availability
+
+Confirm that ExtraMetadataPath is defined as a resource (in Constants.xaml or wherever the theme's resource dictionaries are merged), since Tag="{DynamicResource ExtraMetadataPath}" depends on it. If the [THEME] theme doesn't have this key, copy the relevant <sys:String x:Key="ExtraMetadataPath">... and <sys:Boolean x:Key="UseAbsoluteExtraMetadataPath">true</sys:Boolean> entries from TrailerLovers' Constants.xaml into [THEME]'s equivalent constants file.
+Step 8 — Sanity checks before finishing
+
+Confirm PART_ImageCover and VideoContainer occupy the same Grid cell/position so the swap is seamless (no layout shift).
+Confirm no x:Key is mistakenly placed on the TextBlock (it should only have Name="VideoPath", not x:Key).
+Confirm MediaElementBehaviors namespace is already imported in this file (check existing xmlns: declarations at the top of the file, e.g. for MediaElementBehaviors.Repeat); if it's not present, find the namespace used for it elsewhere in the theme (e.g. in Main.xaml) and add the same xmlns: import to this file's root ResourceDictionary tag.
+Do not modify ListGameItemStyle.xaml sizing, scaling, or animation values — this task is scoped only to adding the video element and triggers.
