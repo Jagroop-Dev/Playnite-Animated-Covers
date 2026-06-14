@@ -61,7 +61,7 @@ C:\Users\[yourusername]\AppData\Local\Playnite
 Open the **GitHub Copilot** chat panel and select **Claude Haiku 4.5** as the model.
 
 
-Copy the prompt from [`patch-prompt.txt`](./patch-prompt.txt) in this repo. Replace the `[theme]` placeholder with the name of your chosen fullscreen theme, then paste the prompt into the Copilot chat and run it.
+Copy the prompt from [`patch-prompt.txt`](./patch-prompt.txt) in this repo. Replace the `[THEME]` placeholder with the name of your chosen fullscreen theme, then paste the prompt into the Copilot chat and run it.
 
 Accept the suggested changes and close VS Code.
 
