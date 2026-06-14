@@ -2,8 +2,6 @@
 
 Get animated game covers in Playnite's fullscreen mode — plays on focus, returns to static on blur. Works by combining the Extra Metadata Loader addon with a modified TrailerLovers theme and a small AI-assisted XAML patch.
 
-> 📹 **Demo:** *[link here]*
-
 ---
 
 ## How it works
